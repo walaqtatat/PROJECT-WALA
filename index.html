@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#171129">
 <meta name="description" content="مكتبة الورّاق — كتبتك القادمة بين يديك. روايات، شعر، تطوير ذات، خيال علمي، كتب أطفال وكلاسيكيات.">
 <title>مكتبة الورّاق — حيث تجد كلُّ روحٍ كتابَها</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📚%3C/text%3E%3C/svg%3E">
@@ -240,6 +241,34 @@ footer{background:#120d22;border-top:1px solid var(--line);padding:56px 0 0;marg
 #toTop.show{opacity:1;pointer-events:auto}
 #toTop:hover{transform:translateY(-3px)}
 
+/* ============ رابط التخطي والسلة ============ */
+.skip-link{position:fixed;top:12px;right:12px;z-index:120;background:var(--amber);color:var(--dark);padding:9px 16px;border-radius:999px;font-weight:800;transform:translateY(-160%);transition:transform .2s}
+.skip-link:focus{transform:none}
+.drawer-backdrop{position:fixed;inset:0;background:rgba(10,7,20,.62);backdrop-filter:blur(4px);z-index:95;opacity:0;transition:opacity .25s}
+.drawer-backdrop:not([hidden]){display:block;opacity:1}
+.cart-drawer{position:fixed;top:0;left:0;bottom:0;width:min(420px,94vw);z-index:100;background:#241b47;border-right:1px solid rgba(255,255,255,.12);padding:28px 24px;transform:translateX(-105%);transition:transform .3s ease;box-shadow:22px 0 60px rgba(0,0,0,.35);overflow-y:auto}
+.cart-drawer.open{transform:none}
+.drawer-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:18px}
+.drawer-head h2{font-size:1.35rem;font-weight:900}
+.drawer-head .sec-label{margin-bottom:0}
+.cart-empty{text-align:center;padding:52px 16px;color:var(--muted)}
+.cart-empty .ic{font-size:3rem;margin-bottom:10px}
+.cart-empty p{margin-bottom:18px}
+.cart-items{list-style:none;display:grid;gap:12px;margin-bottom:22px}
+.cart-item{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:14px;padding:14px}
+.cart-item h3{font-size:.96rem;font-weight:800;margin-bottom:2px}
+.cart-item p{color:var(--muted);font-size:.8rem}
+.cart-item-price{color:var(--amber);font-weight:800;white-space:nowrap}
+.cart-item-actions{display:flex;align-items:center;gap:7px;margin-top:9px}
+.qty-btn,.remove-item{width:28px;height:28px;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--ink);cursor:pointer;font-weight:900}
+.qty-btn:hover,.remove-item:hover{border-color:var(--amber);color:var(--amber)}
+.remove-item{margin-right:auto;color:var(--coral)}
+.cart-summary{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding:16px 0;color:var(--muted);font-weight:700}
+.cart-summary strong{color:var(--amber);font-size:1.2rem}
+.checkout{width:100%}
+.checkout:disabled{opacity:.45;cursor:not-allowed;transform:none!important;box-shadow:none}
+.drawer-note{color:var(--muted);font-size:.75rem;text-align:center;margin-top:14px}
+
 /* ============ استجابة ============ */
 @media (max-width:960px){
   .hero-grid{grid-template-columns:1fr}
@@ -250,6 +279,7 @@ footer{background:#120d22;border-top:1px solid var(--line);padding:56px 0 0;marg
 }
 @media (max-width:640px){
   .nav-links{display:none}
+  .cart-drawer{width:min(390px,94vw);padding:24px 18px}
   section{padding:56px 0}
   .mbox{grid-template-columns:1fr;padding:28px 22px}
   .join-panel{padding:44px 24px}
@@ -266,6 +296,7 @@ footer{background:#120d22;border-top:1px solid var(--line);padding:56px 0 0;marg
 </style>
 </head>
 <body id="top">
+<a class="skip-link" href="#main-content">تجاوز إلى المحتوى</a>
 
 <!-- الشريط العلوي -->
 <header class="nav">
@@ -284,12 +315,36 @@ footer{background:#120d22;border-top:1px solid var(--line);padding:56px 0 0;marg
       <a href="#why">لماذا الورّاق؟</a>
       <a href="#join">انضم إلينا</a>
     </nav>
-    <button class="cart" id="cartBtn" aria-label="سلة المشتريات">
+    <button type="button" class="cart" id="cartBtn" aria-label="سلة المشتريات" aria-controls="cartDrawer" aria-expanded="false">
       🛒 السلة <span class="count" id="cartCount">0</span>
     </button>
   </div>
 </header>
 
+<div class="drawer-backdrop" id="cartBackdrop" hidden></div>
+<aside class="cart-drawer" id="cartDrawer" aria-hidden="true" aria-labelledby="cartTitle" inert>
+  <div class="drawer-head">
+    <div>
+      <span class="sec-label">🛒 مشترياتك</span>
+      <h2 id="cartTitle">سلة الورّاق</h2>
+    </div>
+    <button type="button" class="mclose" id="cartClose" aria-label="إغلاق السلة">✕</button>
+  </div>
+  <div class="cart-empty" id="cartEmpty">
+    <div class="ic">📚</div>
+    <p>لم تضف أي كتاب بعد.</p>
+    <button type="button" class="btn ghost" id="cartContinue">تصفَّح الكتب</button>
+  </div>
+  <ul class="cart-items" id="cartItems" aria-live="polite"></ul>
+  <div class="cart-summary" id="cartSummary" hidden>
+    <span>المجموع</span>
+    <strong id="cartTotal">0.00 د.أ</strong>
+  </div>
+  <button type="button" class="btn primary checkout" id="checkoutBtn" disabled>المتابعة إلى الدفع</button>
+  <p class="drawer-note">هذه نسخة تجريبية للواجهة؛ لا يتم إرسال أي طلب أو دفع فعلي.</p>
+</aside>
+
+<main id="main-content">
 <!-- البطل -->
 <section class="hero">
   <div class="wrap hero-grid">
@@ -397,7 +452,7 @@ footer{background:#120d22;border-top:1px solid var(--line);padding:56px 0 0;marg
       <div class="ic">🔍</div>
       <h3>لا توجد نتائج</h3>
       <p>جرِّب كلمة مختلفة، أو تصفَّح كلَّ التصنيفات.</p>
-      <button class="btn ghost" id="reset">عرض كلِّ الكتب</button>
+      <button type="button" class="btn ghost" id="reset">عرض كلِّ الكتب</button>
     </div>
   </div>
 </section>
@@ -433,6 +488,8 @@ footer{background:#120d22;border-top:1px solid var(--line);padding:56px 0 0;marg
   </div>
 </section>
 
+</main>
+
 <!-- التذييل -->
 <footer>
   <div class="wrap">
@@ -461,7 +518,7 @@ footer{background:#120d22;border-top:1px solid var(--line);padding:56px 0 0;marg
         <ul>
           <li>📍 عمّان، الأردن — دوار المدينة</li>
           <li>📞 +962 6 555 0100</li>
-          <li>✉️ <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="4028252c2c2f0037213232212b6e33282f30">[email&#160;protected]</a></li>
+          <li>✉️ <a href="mailto:hello@warrak.shop">hello@warrak.shop</a></li>
           <li>🕘 السبت–الخميس، 10ص–9م</li>
         </ul>
       </div>
@@ -471,9 +528,9 @@ footer{background:#120d22;border-top:1px solid var(--line);padding:56px 0 0;marg
 </footer>
 
 <!-- النافذة المنبثقة -->
-<div class="overlay" id="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-label="تفاصيل الكتاب">
+<div class="overlay" id="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-label="تفاصيل الكتاب" inert>
   <div class="mbox">
-    <button class="mclose" id="mclose" aria-label="إغلاق">✕</button>
+    <button type="button" class="mclose" id="mclose" aria-label="إغلاق">✕</button>
     <div class="mbook" id="mcover"></div>
     <div class="mtext">
       <span class="mtag" id="mgenre"></span>
@@ -483,16 +540,16 @@ footer{background:#120d22;border-top:1px solid var(--line);padding:56px 0 0;marg
       <p class="mdesc" id="mdesc"></p>
       <div class="mrow">
         <span class="price" id="mprice"></span>
-        <button class="btn primary" id="madd">أضِف إلى السلة 🛒</button>
+        <button type="button" class="btn primary" id="madd">أضِف إلى السلة 🛒</button>
       </div>
     </div>
   </div>
 </div>
 
 <div id="toast" role="status" aria-live="polite"></div>
-<button id="toTop" aria-label="العودة إلى الأعلى">↑</button>
+<button type="button" id="toTop" aria-label="العودة إلى الأعلى">↑</button>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 /* ============ البيانات ============ */
 const GENRE = { novel:'رواية', poetry:'شعر', dev:'تطوير ذات', scifi:'خيال علمي', kids:'أطفال', classic:'كلاسيكيات' };
 const BADGE = { best:'🔥 الأكثر مبيعاً', new:'✨ جديد', classic:'🏛️ كلاسيكي', week:'⭐ كتاب الأسبوع' };
@@ -528,8 +585,16 @@ const BOOKS = [
 ];
 
 const $ = s => document.querySelector(s);
-const state = { genre:'all', q:'', cart:0 };
+const state = { genre:'all', q:'', cartItems:[] };
 let modalId = null;
+let lastFocusedElement = null;
+const CART_STORAGE_KEY = 'warrak-cart-v1';
+try {
+  const savedCart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '[]');
+  if(Array.isArray(savedCart)) state.cartItems = savedCart.filter(item => BOOKS[item.id] && Number.isInteger(item.qty) && item.qty > 0);
+} catch {
+  state.cartItems = [];
+}
 
 /* ============ الشريط المتحرك ============ */
 (function(){
@@ -586,13 +651,18 @@ function stars2(r){
 })();
 
 /* ============ التصفية والبحث ============ */
+function normalize(value){
+  return String(value || '').toLocaleLowerCase('ar').trim()
+    .replace(/[ًٌٍَُِّْـ]/g, '')
+    .replace(/[إأآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي');
+}
 function apply(){
-  const q = state.q.trim();
+  const q = normalize(state.q);
   let n = 0;
   document.querySelectorAll('.card').forEach(c => {
     const b = BOOKS[+c.dataset.id];
     const okG = state.genre === 'all' || b.g === state.genre;
-    const okQ = !q || b.t.includes(q) || b.a.includes(q);
+    const okQ = !q || normalize(`${b.t} ${b.a}`).includes(q);
     const ok = okG && okQ;
     c.style.display = ok ? '' : 'none';
     if(ok) n++;
@@ -612,7 +682,7 @@ $('#heroSearch').addEventListener('submit', e => {
 $('#reset').addEventListener('click', () => {
   state.q = ''; state.genre = 'all';
   $('#heroQ').value = ''; $('#gridQ').value = '';
-  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.g === 'all'));
+  document.querySelectorAll('.tab').forEach(t => { const selected = t.dataset.g === 'all'; t.classList.toggle('on', selected); t.setAttribute('aria-selected', String(selected)); });
   apply();
 });
 apply();
@@ -626,15 +696,85 @@ function toast(msg){
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
 }
+function cartQuantity(){ return state.cartItems.reduce((total, item) => total + item.qty, 0); }
+function syncCart(){
+  try { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(state.cartItems)); } catch {}
+  renderCart();
+}
+function renderCart(){
+  const quantity = cartQuantity();
+  $('#cartCount').textContent = quantity;
+  const hasItems = state.cartItems.length > 0;
+  $('#cartEmpty').hidden = hasItems;
+  $('#cartItems').hidden = !hasItems;
+  $('#cartSummary').hidden = !hasItems;
+  $('#checkoutBtn').disabled = !hasItems;
+  $('#cartItems').innerHTML = state.cartItems.map(item => {
+    const b = BOOKS[item.id];
+    return `<li class="cart-item">
+      <div><h3>${b.t}</h3><p>${b.a} · ${b.p.toFixed(2)} د.أ للنسخة</p>
+        <div class="cart-item-actions" aria-label="الكمية">
+          <button type="button" class="qty-btn" data-cart-action="increase" data-id="${item.id}" aria-label="زيادة كمية ${b.t}">+</button>
+          <span>${item.qty}</span>
+          <button type="button" class="qty-btn" data-cart-action="decrease" data-id="${item.id}" aria-label="إنقاص كمية ${b.t}">−</button>
+          <button type="button" class="remove-item" data-cart-action="remove" data-id="${item.id}" aria-label="حذف ${b.t}">حذف</button>
+        </div>
+      </div><strong class="cart-item-price">${(b.p * item.qty).toFixed(2)} د.أ</strong>
+    </li>`;
+  }).join('');
+  const total = state.cartItems.reduce((sum, item) => sum + BOOKS[item.id].p * item.qty, 0);
+  $('#cartTotal').textContent = `${total.toFixed(2)} د.أ`;
+}
+function updateBodyLock(){
+  document.body.style.overflow = modal.classList.contains('open') || $('#cartDrawer').classList.contains('open') ? 'hidden' : '';
+}
 function addToCart(id, btn){
   const b = BOOKS[id];
-  state.cart++;
-  $('#cartCount').textContent = state.cart;
+  const existing = state.cartItems.find(item => item.id === id);
+  if(existing) existing.qty += 1;
+  else state.cartItems.push({id, qty:1});
+  syncCart();
   const c = $('#cartBtn');
   c.classList.remove('bump'); void c.offsetWidth; c.classList.add('bump');
   if(btn){ btn.classList.remove('pop'); void btn.offsetWidth; btn.classList.add('pop'); }
   toast(`✓ أُضيف «${b.t}» إلى السلة`);
 }
+function openCart(){
+  $('#cartDrawer').classList.add('open');
+  $('#cartDrawer').removeAttribute('inert');
+  $('#cartDrawer').setAttribute('aria-hidden','false');
+  $('#cartBtn').setAttribute('aria-expanded','true');
+  $('#cartBackdrop').hidden = false;
+  requestAnimationFrame(() => $('#cartBackdrop').classList.add('visible'));
+  updateBodyLock();
+  $('#cartClose').focus();
+}
+function closeCart(){
+  $('#cartDrawer').classList.remove('open');
+  $('#cartDrawer').setAttribute('inert','');
+  $('#cartDrawer').setAttribute('aria-hidden','true');
+  $('#cartBtn').setAttribute('aria-expanded','false');
+  $('#cartBackdrop').classList.remove('visible');
+  $('#cartBackdrop').hidden = true;
+  updateBodyLock();
+}
+$('#cartBtn').addEventListener('click', openCart);
+$('#cartClose').addEventListener('click', closeCart);
+$('#cartBackdrop').addEventListener('click', closeCart);
+$('#cartContinue').addEventListener('click', () => { closeCart(); $('#books').scrollIntoView({behavior:'smooth'}); });
+$('#checkoutBtn').addEventListener('click', () => toast('الدفع الإلكتروني غير متاح في النسخة التجريبية.'));
+document.addEventListener('click', e => {
+  const control = e.target.closest('[data-cart-action]');
+  if(!control) return;
+  const id = Number(control.dataset.id);
+  const item = state.cartItems.find(entry => entry.id === id);
+  if(!item) return;
+  if(control.dataset.cartAction === 'increase') item.qty += 1;
+  if(control.dataset.cartAction === 'decrease') item.qty -= 1;
+  if(control.dataset.cartAction === 'remove' || item.qty < 1) state.cartItems = state.cartItems.filter(entry => entry.id !== id);
+  syncCart();
+});
+renderCart();
 document.addEventListener('click', e => {
   const add = e.target.closest('[data-add]');
   if(add){ e.stopPropagation(); addToCart(+add.dataset.add, add); return; }
@@ -646,7 +786,9 @@ document.addEventListener('click', e => {
 const modal = $('#modal');
 function openModal(id){
   const b = BOOKS[id];
+  lastFocusedElement = document.activeElement;
   modalId = id;
+  modal.removeAttribute('inert');
   $('#mcover').style.setProperty('--c1', b.c1);
   $('#mcover').style.setProperty('--c2', b.c2);
   $('#mcover').innerHTML = `<span class="spine"></span><span class="pages"></span>
@@ -659,17 +801,20 @@ function openModal(id){
   $('#mprice').textContent = b.p.toFixed(2) + ' د.أ';
   modal.classList.add('open');
   modal.setAttribute('aria-hidden','false');
-  document.body.style.overflow = 'hidden';
+  updateBodyLock();
+  requestAnimationFrame(() => $('#mclose').focus());
 }
 function closeModal(){
   modal.classList.remove('open');
+  modal.setAttribute('inert','');
   modal.setAttribute('aria-hidden','true');
-  document.body.style.overflow = '';
+  updateBodyLock();
+  if(lastFocusedElement && typeof lastFocusedElement.focus === 'function') lastFocusedElement.focus();
   modalId = null;
 }
 $('#mclose').addEventListener('click', closeModal);
 modal.addEventListener('click', e => { if(e.target === modal) closeModal(); });
-document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape'){ closeModal(); closeCart(); } });
 $('#madd').addEventListener('click', function(){
   if(modalId === null) return;
   addToCart(modalId, this);
@@ -683,8 +828,9 @@ document.addEventListener('keydown', e => {
 });
 
 /* ============ النشرة ============ */
-$('#joinForm').addEventListener('submit', function(){
-  this.outerHTML = '<p class="join-ok">🎉 أهلاً بك في عائلة الورّاق! رسالةُ قادمةٌ إليك قريباً…</p>';
+$('#joinForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  this.outerHTML = '<p class="join-ok" role="status">🎉 أهلاً بك في عائلة الورّاق! رسالةُ قادمةٌ إليك قريباً…</p>';
   toast('✓ تمَّ اشتراكك في النشرة الأسبوعية');
 });
 
@@ -719,5 +865,5 @@ window.addEventListener('scroll', () => {
 }, { passive:true });
 $('#toTop').addEventListener('click', () => window.scrollTo({ top:0, behavior:'smooth' }));
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a385fb0b2b2314dd',t:'MTc4ODk1NDY4Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
